@@ -28,7 +28,7 @@ _Abrir aplicación app Designer de Matlab y ejecutar._
 
 ## Wiki 📖
 
-A través del siguiente enlace puedes acceder a más información, como la documentación principal de este proyecto. [Wiki](https://github.com/PalomaSanx/UAVsimulation_TFG.git/wiki)
+A través del siguiente enlace puedes acceder a más información, como la documentación principal de este proyecto. [Wiki](https://github.com/PalomaSanx/UAVsimulation_TFG.git/tree/master/wiki)
 
 ## Versionado 📌
 

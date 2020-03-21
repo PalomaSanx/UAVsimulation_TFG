@@ -36,7 +36,9 @@ Usamos [SemVer](http://semver.org/) para el versionado. Para todas las versiones
 
 ## Autores ✒️
 
-* **Paloma Sánchez** - *Desarrollo* - [palomasanx](https://github.com/PalomaSanx)
+* **Paloma Sánchez** - *Autor* - [palomasanx](https://github.com/PalomaSanx)
+* **Rafael Casado González** - *Director* - 
+* **Aurelio Bermúdez Martín** - *Director* - 
 
 ## Licencia 📄
 

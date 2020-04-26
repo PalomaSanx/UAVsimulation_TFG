@@ -52,7 +52,7 @@ function checkFig(obj)
 %     zlabel('altitude  (meters)')
     grid(axesHandler,'on')
     hold(axesHandler,'on')
-    axis([-500 +500 -500 +500 0 50]) 
+    axis([-500 +500 -500 +500 0 30]) 
     title('Control de colisiones UAV')
 
     % Quito manejadores de puntos eliminados

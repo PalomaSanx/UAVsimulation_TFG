@@ -47,9 +47,12 @@ circle = [circleX' circleY'];
 X = zeros(1,2);
 Y = zeros(1,2);
 
+% Celdas
+Celda = zeros(1,2);
+
 %% DEFINICION DE UAVS
 
-numUAVs = 10;
+numUAVs = 2;
 
 UAVpos = [ 000  400
            300  300
@@ -104,6 +107,10 @@ t_step = 1;    %paso de simulación
 
 vel_max = 1;   %velocidad máxima en m/s
 
+n=zeros(numUAVs,2);
+a=0;
+puntoCorte = [];
+velProhibida = [];
 
 for t = 0:t_step:t_end     
     
@@ -114,13 +121,67 @@ for t = 0:t_step:t_end
         dist = norm(route);
         
         %calculo velocidad
-        if dist == 0
+        if round(dist) == 0
             UAVvel(i,:) = 0;
+            for m=1:numUAVs
+                a = a+(UAVvel(m,1));
+            end
+            if a==0
+                t=t_end;
+                break;
+            else
+                a=0;
+            end
+
         elseif conflict(i)
             % Mecanismo de evitación de colisiones
-                UAVvel(i,1) = UAVvel(i,1)-UAVvel(uavMinDist(i,2),1);
-                UAVvel(i,2) = UAVvel(i,2)-UAVvel(uavMinDist(i,2),2);
+                Line1x = UAVline(i).XData;
+                Line1y = UAVline(i).YData;
+                Line2x = UAVline(uavMinDist(i,2)).XData;
+                Line2y = UAVline(uavMinDist(i,2)).YData;
                 
+                P1=[Line1x;Line1y];
+                P2=[Line2x;Line2y];
+                
+                
+                for h=1:size(P1,2)
+                    for j=1:size(P2,2)
+                        if round(P1(:,h))==round(P2(:,j))
+                            puntoCorte=[P1(1,h) P1(2,h)]
+                        end
+                    end
+                end
+                
+
+                
+                %p = find(round(Line1y)==round(Line2y));
+                if ~isempty(puntoCorte)
+                       %puntoCorte=[Line1x(p(1)),Line1y(p(1))]
+                        plot(puntoCorte(1),puntoCorte(2),'rx','markersize',4,'markerfacecolor','y');
+                
+                % Calculamos nuevo vector velocidad
+                % nuevo target (celda)
+                equisPro = [];
+                isPor = [];
+                equisPro = [(round(puntoCorte(1))-(min(UAVpos(i,1)+UAVrad,UAVpos(uavMinDist(i,2),1))+UAVrad)):1:(round(puntoCorte(1))+(max(UAVpos(i,1)+UAVrad,UAVpos(uavMinDist(i,2),1)+UAVrad)))];
+                isPro = [(round(puntoCorte(2))-(min(UAVpos(i,2)+UAVrad,UAVpos(uavMinDist(i,2),2))+UAVrad)):1:(round(puntoCorte(2))+(max(UAVpos(i,2),UAVpos(uavMinDist(i,2),2)+UAVrad)))];
+                velProhibida = [equisPro isPro];
+                
+                n(i,:)=-501;
+                
+                while n(i,1) == -501 || ~isempty(find(n(i,1) == velProhibida)) || ~isempty(find(n(i,2) == velProhibida))
+                        n(i,:) = [randi([-(round(UAVpos(i,1)))-200 (round(UAVpos(i,1)))+200],1,2)];
+                end
+                plot(n(i,1),n(i,2),'gx','markersize',4,'markerfacecolor','y');
+                
+               
+                %ruta y distancia al objetivo nuevo
+                route2 = n(i,:) - UAVpos(i,:);
+                dist2 = norm(route2);
+                UAVvel(i,:) = route2 / dist2 * 10;
+                UAVrad=UAVrad+10;
+                puntoCorte = [];
+               end
         else
             UAVvel(i,:) = route / dist * vel_max;
         end
@@ -133,18 +194,18 @@ for t = 0:t_step:t_end
         UAVcircle(i).Vertices = UAVpos(i,:) + circle;
         
         %actualizamos lineas
-        for j=2:UAVrad*2
-            X(1) = UAVpos(i,1);
-            Y(1) = UAVpos(i,2);
+        for j=2:UAVrad+500
+            X(1) = UAVpos(i,1)-UAVvel(i,1);
+            Y(1) = UAVpos(i,2)-UAVvel(i,2);
             X(j) = UAVpos(i,1)+UAVvel(i,1)*j;
             Y(j) = UAVpos(i,2)+UAVvel(i,2)*j;    
         end
         
          UAVline(i).XData=X;
          UAVline(i).YData=Y;
-         
+
         % calculamos UAV más cercano
-        count=0;
+        
         for id=1:numUAVs
             for id2=1:numUAVs
                 if id2==id
@@ -153,11 +214,13 @@ for t = 0:t_step:t_end
                     d(id2,:)=UAVpos(id,:)-UAVpos(id2,:);
                     di(id2)=norm(d(id2,:));
                     % Calculamos si existe conflicto
-                    if ~(di < UAVrad+UAVrad)
+                    if ~(di < UAVrad*2) 
                         conflict(id)=false;
                     else
                         conflict(id)=true;
+                                       
                     end
+                    di(id)=NaN;
                     uavMinDist(id,:)=[min(di) find(di==min(di),1)];
                 end
             end           

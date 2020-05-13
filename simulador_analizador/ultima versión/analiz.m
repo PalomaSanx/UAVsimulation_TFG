@@ -33,7 +33,7 @@ axesHandler = axes(      ...
 grid(axesHandler,'on')
 hold(axesHandler,'on')
 axis([-500 +500 -500 +500 0 50]) 
-title('Control de colisiones UAV')
+title('Simulador para el testeo de algoritmo')
 
 
 % Circulo tipo
@@ -47,7 +47,7 @@ circle = [circleX' circleY'];
 
 
 %% DEFINICION DE UAVS
-eval1;
+run("banco de pruebas/eval2_4A_100V");
 
 
 %% SIMULACION          
@@ -60,7 +60,7 @@ for t = 1:t_step:t_end
     
     %calculo desplazamiento de cada UAV
     for i = 1:numUAVs
-
+        
         %velocidad actual
         vx = UAVvel(i,1);
         vy = UAVvel(i,2);
@@ -143,7 +143,7 @@ for t = 1:t_step:t_end
             
             %generamos obstaculo de velocidad lineal
             %(semiplano vertical u horizontal)
-            if     better == ladoN
+            if better == ladoN
                 boxR.S = -10000;
                 boxR.E = +10000;
                 boxR.W = -10000;
@@ -165,7 +165,7 @@ for t = 1:t_step:t_end
 
             
             %ampliamos cuadro rojo hasta la mitad del vector velocidad
-            if     better == ladoN
+            if better == ladoN
                 boxR.N = (boxR.N + vy)/2;
             elseif better == ladoS
                 boxR.S = (boxR.S + vy)/2;
@@ -179,7 +179,7 @@ for t = 1:t_step:t_end
             
             %calculo porcion del cuadro verde que deja el cuadro rojo
             %al convertirse en un semiplano
-            if     better == ladoN
+            if better == ladoN
                 boxG.S = max([boxG.S boxR.N]);
             elseif better == ladoS
                 boxG.N = min([boxG.N boxR.S]);
@@ -204,15 +204,48 @@ for t = 1:t_step:t_end
             %DETENERLO NO ES LA SOLUCION, PUESTO QUE SE
             %ESPERA QUE SIGA AVANZANDO. LO SUYO ES QUE AVANCE
             %HACIA LA POSICION QUE MINIMICE LA PENETRACION EN EL OBSTACULO
-            fprintf('%3.1f\tCuadro de velocidad vacio en nodo %d\n',t,i);
+            fprintf('%3.1f\tCuadro de velocidad vacio en nodo %d\n',t,i);             
             
-            UAVvelF(i,1) = (boxG.W + boxG.E)/2;
-            UAVvelF(i,2) = (boxG.S + boxG.N)/2;
+            %calculo distancia de i a intrusos
+
+%             for k = 1:numUAVs
+%                 if i == k
+%                     continue
+%                 end
+%                 d(i)=NaN;
+%                 d(k) = norm(UAVpos(k,:) - UAVpos(i,:));
+%                 d2 = min(d);  
+%                 
+%             end
+%             
+%             for m=1:numUAVs
+%                         if m==i
+%                             continue
+%                         end
+%                         % para el intruso más cercano
+%                         if m == find(d2==d) && m==j
+%             
+%                             UAVvelF(i,1) = (-UAVvel(j,1));
+%                             UAVvelF(i,2) = (-UAVvel(j,2));
+%                             
+%                         else
+                          if UAVvel(i,2)<0
+                            UAVvelF(i,1) = min(max(boxG.W , boxG.E)*2,-vel_max)
+                            UAVvelF(i,2) = min(max(boxG.S , boxG.N)*2,-vel_max)
+                          else
+                            UAVvelF(i,1) = min(max(boxG.W , boxG.E)*2,vel_max);
+                            UAVvelF(i,2) = min(max(boxG.S , boxG.N)*2,vel_max)
+                          end
+%                         end
+%             end
+%             destine2 = scatter(UAVpos(i,1)+UAVvelF(i,1)*t_step,UAVpos(i,1)+UAVvelF(i,2)*t_step,100,'g','x'); 
+%             delete(destine2);
 
         else
             %calculamos mejor velocidad de entre las posible
             route = UAVtarget(i,:) - UAVpos(i,:);
             UAVvelF(i,:) = setVel(route,boxG,vel_max,tau);
+        
         end
         
         
@@ -241,6 +274,8 @@ for t = 1:t_step:t_end
         %actualizamos dibujo
         plot([xo UAVpos(i,1)],[yo UAVpos(i,2)],'k');
         UAV_(i).Vertices = UAVpos(i,:) + circle;
+        textCircle(i).Position = UAVpos(i,:);
+        
     end
     drawnow %limitrate nocallbacks;
     
@@ -400,15 +435,60 @@ function best_pto = setVel(route,box,vel_max,tau)
         vel(12,:)  = [x,y];
         plot(x,y,'ob','LineWidth',2);
     end
-
     
     %elijo mejor opcion
     best_pto = [0 0];
+    
+    
+     % punto cercano a mi dirección
+    
+    boxY.N =  vel_max;
+    boxY.S = -vel_max;
+    boxY.E =  vel_max;
+    boxY.W = -vel_max;
+    
+   if vd(2)>box.N && box.N~=0
+        y=box.N;
+        x=vd(1);
+        if inside([x y],box) && inside([x y],boxY)
+            best_pto = [-x y];
+        end
+        plot(x,y,'or','LineWidth',2);
+    elseif vd(2)<box.S 
+        y=box.S;
+        x=vd(1);
+        if inside([x y],box) && inside([x y],boxY)
+            best_pto = [x y];
+        end
+        plot(x,y,'or','LineWidth',2);
+    elseif vd(1)<box.W
+        y=vd(2);
+        x=box.W;
+        if inside([x y],box) && inside([x y],boxY)
+            best_pto = [x y];
+        end
+        plot(x,y,'or','LineWidth',2);
+    elseif vd(1)>box.E
+        y=vd(2);
+        x=box.E;
+        if inside([x y],box) && inside([x y],boxY)
+            best_pto = [x y];
+        end
+        plot(x,y,'or','LineWidth',2);
+    end
+    
+    
+    
+    
     for i = 1:12
         ni = norm(vel(i,:));
         nb = norm(best_pto);
         if ni > nb
-            best_pto = vel(i,:);
+            ai = angle(route,vel(i,:));
+            ab = angle(route,best_pto);
+            if ai < ab+10 || nb == 0
+                best_pto = vel(i,:);
+            end
         elseif ni == nb
             ai = angle(route,vel(i,:));
             ab = angle(route,best_pto);
@@ -418,6 +498,7 @@ function best_pto = setVel(route,box,vel_max,tau)
         end
     end
     
+   
     plot([0 best_pto(1)],[0 best_pto(2)],'g-','LineWidth',0.5);
     delete(figHandler)
 

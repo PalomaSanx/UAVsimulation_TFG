@@ -6,11 +6,13 @@ properties
     numUAVs     %cantidad de UAVs en la simulacion
     UAVrad      %radio de un UAV (m)
     vel_max     %velocidad maxima
-
+    
+    UAVposInit  %posicion inicial
     UAVpos      %posicion actual
     UAVvel      %velocidad actual
     UAVvelF     %velocidad en el paso siguiente
     UAVtarget   %posicion objetivo
+    conflictUAV %matriz para control de conflictos
 
     AREAfig     %figura de visualizacion de UAVs
     circle
@@ -19,17 +21,15 @@ properties
     
     VELfig      %figura de gestion de obstaculos de velocidad
     
-    p           %panel estadísticas
-    p3          %panel derecha
-    tSim        %Tiempo simulacion
-    dist        %distancia total recorrida
-
+    distTotal   %Distancia total recorrida
+    timeTotal   %Tiempo total al objetivo
+    area        %Tamaño escenario (axis)
 end
 
 methods
 
 
-function obj = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad)
+function obj = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,area)
 
     sp = size(UAVpos);
     st = size(UAVtarget);
@@ -41,25 +41,26 @@ function obj = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad)
     obj.numUAVs = sp(1);
     obj.vel_max = vel_max;
     obj.UAVrad  = UAVrad;
-
+    
+    obj.UAVposInit = UAVpos;
     obj.UAVpos = UAVpos;
     obj.UAVvel  = zeros(obj.numUAVs,2); 
     obj.UAVvelF = obj.UAVvel; 
     obj.UAVtarget = UAVtarget;
+    obj.conflictUAV = zeros(obj.numUAVs,obj.numUAVs);
     
+    obj.distTotal = zeros(1,obj.numUAVs);
+    obj.timeTotal = zeros(1,obj.numUAVs);
+    obj.area = area;
+
     obj = obj.CreateAREAfig();
-    %obj = obj.CreateVELfig();
-    
-    for i=1:obj.numUAVs
-        obj.textCircle(i) = text(obj.UAVpos(i,1),obj.UAVpos(i,2),int2str(i));
-    end
-    
+    obj = obj.CreateVELfig();
 end
 
 
 function obj = BBnav(obj,i,tau,verbose)
 %metodo que genera la velocidad futura
-%a partir de la situación relatica de los UAVs
+%a partir de la situación relativa de los UAVs
 %empleando boundig boxes
 %tau: margen de tiempo en el que prevenir conflictos (s)
 
@@ -149,26 +150,26 @@ function obj = BBnav(obj,i,tau,verbose)
         %elijo lado mas lejano
         better = max([ladoN ladoS ladoE ladoW]);
 
-
         %generamos obstaculo de velocidad lineal
         %(semiplano vertical u horizontal)
-        if     better == ladoN
-            boxR.S = -10000;
-            boxR.E = +10000;
-            boxR.W = -10000;
-        elseif better == ladoS
-            boxR.N = +10000;
-            boxR.E = +10000;
-            boxR.W = -10000;
-        elseif better == ladoE
-            boxR.N = +10000;
-            boxR.S = -10000;
-            boxR.W = -10000;
-        else %if better == ladoW
-            boxR.N = +10000;
-            boxR.S = -10000;
-            boxR.E = +10000;
-        end
+        switch better
+            case ladoN
+                boxR.S = -10000;
+                boxR.E = +10000;
+                boxR.W = -10000;
+            case ladoS
+                boxR.N = +10000;
+                boxR.E = +10000;
+                boxR.W = -10000;
+            case ladoE
+                boxR.N = +10000;
+                boxR.S = -10000;
+                boxR.W = -10000;
+            otherwise %ladoW
+                boxR.N = +10000;
+                boxR.S = -10000;
+                boxR.E = +10000;
+        end        
         
         if verbose
             boxR_.XData = [boxR.W boxR.E boxR.E boxR.W];
@@ -176,14 +177,15 @@ function obj = BBnav(obj,i,tau,verbose)
         end
 
         %ampliamos cuadro rojo hasta la mitad del vector velocidad
-        if     better == ladoN
-            boxR.N = (boxR.N + vy)/2;
-        elseif better == ladoS
-            boxR.S = (boxR.S + vy)/2;
-        elseif better == ladoE
-            boxR.E = (boxR.E + vx)/2;
-        else %if better == ladoW
-            boxR.W = (boxR.W + vx)/2;
+        switch better
+            case ladoN
+                boxR.N = (boxR.N + vy)/2;
+            case ladoS
+                boxR.S = (boxR.S + vy)/2;
+            case ladoE
+                boxR.E = (boxR.E + vx)/2;
+            otherwise %ladoW
+                boxR.W = (boxR.W + vx)/2;
         end
         
         if verbose
@@ -193,14 +195,15 @@ function obj = BBnav(obj,i,tau,verbose)
 
         %calculo porcion del cuadro verde que deja el cuadro rojo
         %al convertirse en un semiplano
-        if     better == ladoN
-            boxG.S = max([boxG.S boxR.N]);
-        elseif better == ladoS
-            boxG.N = min([boxG.N boxR.S]);
-        elseif better == ladoE
-            boxG.W = max([boxG.W boxR.E]);
-        else %if better == ladoW
-            boxG.E = min([boxG.E boxR.W]);
+        switch better
+            case ladoN
+                boxG.S = max([boxG.S boxR.N]);
+            case ladoS
+                boxG.N = min([boxG.N boxR.S]);
+            case ladoE
+                boxG.W = max([boxG.W boxR.E]);
+            otherwise %ladoW
+                boxG.E = min([boxG.E boxR.W]);
         end
 
         if verbose
@@ -420,12 +423,26 @@ function obj = TimeStep(obj,t_step,t_stab)
     figure(obj.AREAfig)
     for i = 1:obj.numUAVs
         
+        %calculo velocidad directa a objetivo
+        route = obj.UAVtarget(i,:) - obj.UAVpos(i,:);
+        dist = norm(route);
+        if dist == 0
+            vd = [0 0];
+        else
+            vel_req = dist / 1;
+            vd = route / dist * min(vel_req,obj.vel_max);
+        end
+        vdx = vd(1);
+        vdy = vd(2);
+        obj.UAVvel(i,:) = [vdx vdy];
+        
+        
         %actualización de la velocidad actual
         %implemento un sistema de primer orden
-        w = 1/t_stab; %t_stab: tiempo requerido para que la señal 
-                      %        alcance el 63% de su valor
-        acel = -w * obj.UAVvel(i,:) + w * obj.UAVvelF(i,:);
-        obj.UAVvel(i,:) = obj.UAVvel(i,:) + acel * t_step;
+%         w = 1/t_stab; %t_stab: tiempo requerido para que la señal 
+%                       %        alcance el 63% de su valor
+%         acel = -w * obj.UAVvel(i,:) + w * obj.UAVvelF(i,:);
+%         obj.UAVvel(i,:) = obj.UAVvel(i,:) + acel * t_step;
         
  %       obj.UAVvel(i,:) = obj.UAVvelF(i,:);
 
@@ -434,13 +451,12 @@ function obj = TimeStep(obj,t_step,t_stab)
         xo = obj.UAVpos(i,1);
         yo = obj.UAVpos(i,2);
         obj.UAVpos(i,:) = obj.UAVpos(i,:) + obj.UAVvel(i,:) * t_step;
-      
+        
+        obj.distTotal(i) =  obj.distTotal(i) + norm([xo yo]-obj.UAVpos(i,:));
         %actualizamos dibujo
         plot([xo obj.UAVpos(i,1)],[yo obj.UAVpos(i,2)],...
-             'Color',[0.5 0.5 0.5]);
+             'Color',[i/obj.numUAVs,1-i/obj.numUAVs,0]);
         obj.UAV_(i).Vertices = obj.UAVpos(i,:) + obj.circle;
-        %obj.textCircle(i).Position = obj.UAVpos(i,:);
-        
 
     end
     drawnow limitrate nocallbacks
@@ -448,7 +464,7 @@ function obj = TimeStep(obj,t_step,t_stab)
 end
 
 
-function conflict = ConflictDetection(obj)
+function [conflict,obj] = ConflictDetection(obj)
     %deteccion de conflictos
     conflict = false;
     for i = 1:obj.numUAVs - 1
@@ -456,6 +472,7 @@ function conflict = ConflictDetection(obj)
             dist = norm(obj.UAVpos(j,:) - obj.UAVpos(i,:));
             if dist < 2 * obj.UAVrad
                 fprintf('COLISION entre %d y %d\n',i,j);
+                obj.conflictUAV(i,j)=1; 
                 conflict = true;
             end
         end
@@ -463,14 +480,18 @@ function conflict = ConflictDetection(obj)
 end
 
 
-function fin = TargetsReached(obj)
+function [fin,obj] = TargetsReached(obj,t)
     %deteccion de fin de simulación
     fin = true;
     for i = 1:obj.numUAVs
         dist = norm(obj.UAVtarget(i,:) - obj.UAVpos(i,:));
         if dist > 1
             fin = false;
-            return
+            %return
+        else
+            if obj.timeTotal(i)==0
+                obj.timeTotal(i) = t; 
+            end      
         end
     end
 end
@@ -486,37 +507,23 @@ function obj = CreateAREAfig(obj)
             'Name',figName, ...
             'NumberTitle','off', ...
             'Position',figPosition, ...
-            'WindowState','fullscreen',...
             'Resize','on');
-
-        
     else
         clf(obj.AREAfig);
     end
 
+
     figure(obj.AREAfig)
-    
-    % Panel para incluir estadísticas de simulación
-    obj.p = uipanel(obj.AREAfig,'Position',[0.1 0.85 0.8 0.1]);
-    % estadísticas
-    obj.tSim = 0.0001;
-    uicontrol(obj.p,'Style','text','String',['Simulation time: ',num2str(obj.tSim),' seg'],'Position',[20 20 150 40]); 
-    
-    % Panel para incluir figura 'AREA'
-    p2 = uipanel(obj.AREAfig,'Position',[0.1 0.1 0.8 0.7]);
-    % Panel derecha
-    obj.p3 = uipanel(obj.AREAfig,'Position',[1 0.1 0.8 0.7]);
-    
+
     % eje 
     axesHandler = axes(      ...
-      'Parent', p2,  ...
+      'Parent', obj.AREAfig,  ...
       'Units','normalized', ...
       'Visible','on');
     grid(axesHandler,'on')
     hold(axesHandler,'on')
-    axis([-500 +500 -500 +500 0 50]) 
-    
-    
+    axis([-obj.area +obj.area -obj.area +obj.area 0 50]) 
+
     %pinto los circulos de los UAVs
     handle = fill([0 1 1 0],[0 0 1 1],'r');
     obj.UAV_ = repmat(handle,obj.numUAVs,1);
@@ -537,6 +544,8 @@ function obj = CreateAREAfig(obj)
         obj.UAV_(i) = handle;
         obj.UAV_(i).Vertices = obj.UAVpos(i,:) + obj.circle;
         obj.UAV_(i).Faces =  1:numpts;
+        obj.textCircle(i) = text(obj.UAVpos(i,1),obj.UAVpos(i,2),int2str(i));
+
     end
 end
 
@@ -568,14 +577,7 @@ function obj = CreateVELfig(obj)
 
 end
 
-function obj = statistics(obj)
-    uicontrol(obj.p,'Style','text','String',['Simulation time: ',num2str(obj.tSim),' seg'],'Position',[20 20 150 40]);
-    for i=1:obj.numUAVs
-        dist = norm(obj.UAVtarget(i,:)-obj.UAVpos(i,:));
-        uicontrol(obj.p,'Style','text','String',['Distancia UAV ',num2str(i),': ',num2str(dist)],'Position',[250 20 150 40]);
-    end
-end
-
+    
 end %methods
 end %classdef
 

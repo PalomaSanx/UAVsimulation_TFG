@@ -34,8 +34,9 @@ timeTotal = air.timeTotal;
 for i=1:air.numUAVs
     tt(i)=(norm(air.UAVtarget(i,:)-air.UAVposInit(i,:))/air.vel_max);
 end
+increaseTime = ((timeTotal-tt)./timeTotal)*100;
 ax2 = subplot(3,1,3);
-bar(ax2,((timeTotal-tt)./timeTotal)*100);
+bar(ax2,increaseTime);
 grid on
 title('% Total time for UAV');
 xlabel('UAVid');  % etiqueta para el nombre del eje x
@@ -56,4 +57,15 @@ annotation('textbox',[.45 0.96 .3 .04],'String',['Simulation Time : ',num2str(tS
  print(figAnalitics,[ruta 'imagen_de_estadisticas_pdf'],'-dpdf');  % para guardar una imagen en un documento pdf 
  winopen(['./' nc '/imagen_de_estadisticas_pdf.pdf']);
 
- %close all;
+ %% Inserto registro en log 'outputLog' 
+ %(código 01: tiempo vs radio)
+ %(código 02: colisiones vs radio).
+ %(código 03: colisiones vs vel_max).
+    outputLog = fopen('outputLog_6.csv','w');
+    %for i=1:air.numUAVs
+        fprintf(outputLog,"03,%05.0f,%+05.2f,%05.2f\n" ...
+                 ,scenario_choice    ...
+                 ,air.vel_max        ...
+                 ,numConf);
+    %end
+ close all;

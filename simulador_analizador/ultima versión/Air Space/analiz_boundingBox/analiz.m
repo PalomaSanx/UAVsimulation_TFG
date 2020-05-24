@@ -2,13 +2,13 @@ clc; clear;
 tic;
 %% DEFINICION DE UAVS
 % menu para simulaciones
-user_choice = menu ('Elige el escenario a simular','Aleatorio','Escenario 1','Escenario 2','Escenario 3', 'Escenario 4','Escenario 5','Escenario 6','Escenario 7','Escenario 8','Escenario 9','Escenario 10');
+scenario_choice = menu ('Elige el escenario a simular','Aleatorio 1','Escenario 2(Tiempo/radio)(colisiones/radio)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(colisiones/radio)','Escenario 8(colisiones/radio)','Escenario 9(colisiones/vel_max)','Escenario 10(colisiones/vel_max)','Escenario 11(colisiones/vel_max)','Escenario 12(colisiones/vel_max)');
 
-switch user_choice 
+switch scenario_choice 
     case 1
          prompt = {'Enter number of UAVs:','Enter area:'};
          dlgtitle = 'Input';
-         dims = [1 35];
+         dims = [1 35];n.n,
          answer = inputdlg(prompt,dlgtitle,dims);
          [UAVpos, UAVtarget, vel_max, UAVrad] = randScen(str2num(answer{1}),str2num(answer{2}));  
     case 2
@@ -22,15 +22,17 @@ switch user_choice
     case 6
          run("../banco de pruebas/eval1_6A_100V_50R");
     case 7
-         run("../banco de pruebas/eval1_2A_100V_25R");
+         run("../banco de pruebas/eval2_2A_100V_50R");
     case 8
-         run("../banco de pruebas/eval1_3A_100V_25R");
+         run("../banco de pruebas/eval3_2A_100V_50R");
     case 9
-         run("../banco de pruebas/eval1_4A_100V_25R");
+         run("../banco de pruebas/eval4_2A_100V_5R");
     case 10
-         run("../banco de pruebas/eval1_5A_100V_25R");
+         run("../banco de pruebas/eval5_2A_100V_5R");
     case 11
-         run("../banco de pruebas/eval1_6A_100V_25R");
+         run("../banco de pruebas/eval6_2A_100V_5R");
+    case 12
+         run("../banco de pruebas/eval7_2A_100V_5R");
     otherwise
         disp('opción incorrecta');      
 end
@@ -49,7 +51,8 @@ if t_sim_step > t_stab
     fprintf('ERROR en definición de tiempos\n');
     return
 end
-t_nav_step = (air.numUAVs/2)/2;%1           %intervalo para recalcular navegación (s)
+t_nav_step = (air.numUAVs/2)/2;%1   %intervalo para recalcular navegación (s)
+
 t_prev_nav = -t_nav_step; %intervalo para recalcular navegación (s)
 t_sim_end  = 10000;       %tiempo de fin de simulación (s)
 
@@ -97,7 +100,7 @@ function [UAVpos, UAVtarget, vel_max, UAVrad] = randScen(numUAVs, area)
         UAVtarget(i,:) = r(i,3:4);
     end
     vel_max = randi([25 100]);
-    UAVrad  = randi([5 50]);
+    UAVrad  = randi([5 25]);
     dMin = UAVrad*2;
     exit = false;
     while ~exit

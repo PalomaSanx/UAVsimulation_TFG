@@ -2,7 +2,7 @@ clc; clear;
 tic;
 %% DEFINICION DE UAVS
 % menu para simulaciones
-user_choice = menu ('Elige el escenario a simular','Aleatorio','Escenario 1','Escenario 2','Escenario 3', 'Escenario 4','Escenario 5','Escenario 6','Escenario 7','Escenario 8','Escenario 9','Escenario 10');
+user_choice = menu ('Elige el escenario a simular','Aleatorio 1','Escenario 2(Tiempo/radio)(colisiones/radio)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(colisiones/radio)','Escenario 8(colisiones/radio)','Escenario 9(colisiones/vel_max)','Escenario 10(colisiones/vel_max)','Escenario 11(colisiones/vel_max)');
 
 switch user_choice 
     case 1
@@ -22,15 +22,15 @@ switch user_choice
     case 6
          run("../banco de pruebas/eval1_6A_100V_50R");
     case 7
-         run("../banco de pruebas/eval1_2A_100V_25R");
+         run("../banco de pruebas/eval2_2A_100V_50R");
     case 8
-         run("../banco de pruebas/eval1_3A_100V_25R");
+         run("../banco de pruebas/eval3_2A_100V_50R");
     case 9
-         run("../banco de pruebas/eval1_4A_100V_25R");
+         run("../banco de pruebas/eval4_2A_100V_5R");
     case 10
-         run("../banco de pruebas/eval1_5A_100V_25R");
+         run("../banco de pruebas/eval5_2A_100V_5R");
     case 11
-         run("../banco de pruebas/eval1_6A_100V_25R");
+         run("../banco de pruebas/eval6_2A_100V_5R");
     otherwise
         disp('opción incorrecta');      
 end
@@ -55,13 +55,13 @@ t_sim_end  = 10000;       %tiempo de fin de simulación (s)
 
 for t = 0 : t_sim_step : t_sim_end
     
-%     if t - t_prev_nav >= t_nav_step
-%         t_prev_nav = t;
-%         %navegación de cada UAV
-%         for i = 1:air.numUAVs
-%             air = air.BBnav(i,t_nav_step,false);
-%         end
-%     end
+    if t - t_prev_nav >= t_nav_step
+        t_prev_nav = t;
+        %navegación de cada UAV
+        for i = 1:air.numUAVs
+            air = air.BBnav(i,t_nav_step,false);
+        end
+    end
     
     
     %desplazamiento de UAVs en función de su velocidad actual
@@ -96,7 +96,7 @@ function [UAVpos, UAVtarget, vel_max, UAVrad] = randScen(numUAVs, area)
         UAVpos(i,:) = r(i,1:2);
         UAVtarget(i,:) = r(i,3:4);
     end
-    vel_max = randi([20 100]);
+    vel_max = randi([25 100]);
     UAVrad  = randi([5 50]);
     dMin = UAVrad*2;
     exit = false;

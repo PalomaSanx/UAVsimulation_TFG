@@ -2,7 +2,7 @@ clc; clear;
 tic;
 %% DEFINICION DE UAVS
 % menu para simulaciones
-user_choice = menu ('Elige el escenario a simular','Aleatorio 1','Escenario 2(Tiempo/radio)(colisiones/radio)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(colisiones/radio)','Escenario 8(colisiones/radio)','Escenario 9(colisiones/vel_max)','Escenario 10(colisiones/vel_max)','Escenario 11(colisiones/vel_max)');
+user_choice = menu ('Elige el escenario a simular','Aleatorio 1','Escenario 2(Tiempo/radio)(colisiones/radio)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(colisiones/radio)','Escenario 8(colisiones/radio)','Escenario 9(colisiones/vel_max)','Escenario 10(colisiones/vel_max)','Escenario 11(colisiones/vel_max)','Escenario 12(colisiones/vel_max)','Escenario 13(realista/2UAVs)');
 
 switch user_choice 
     case 1
@@ -31,13 +31,17 @@ switch user_choice
          run("../banco de pruebas/eval5_2A_100V_5R");
     case 11
          run("../banco de pruebas/eval6_2A_100V_5R");
+    case 12
+         run("../banco de pruebas/eval7_2A_100V_5R");
+    case 13
+         run("../banco de pruebas/eval8_2A_100V_025R");
     otherwise
         disp('opción incorrecta');      
 end
 if exist('answer')
     air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,str2num(answer{2}));
 else
-    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,500);
+    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,5000);
 end
 
 

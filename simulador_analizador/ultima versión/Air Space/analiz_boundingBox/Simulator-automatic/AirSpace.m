@@ -384,14 +384,22 @@ function best_pto = selectVel(obj,route,box,vel_max,tau,verbose,idUAV)
             ai = obj.angle(route,vel(i,:));
             ab = obj.angle(route,best_pto);
             %girar hacia derecha siempre (se podría elegir girar a la izq)
-            if ai==ab && (obj.UAVvel(idUAV,1)>0 || 
-                if vel(i,2)<0
+            if ai==ab && obj.UAVvel(idUAV,1)>0 %UAV con direccion derecha 
+                if vel(i,2)<0 
                     best_pto = vel(i,:);
                 end     
-            elseif ai==ab && obj.UAVvel(idUAV,1)<0
-                if vel(i,2)>0
+            elseif ai==ab && obj.UAVvel(idUAV,1)<0 %UAV con direccion izquierda
+                if vel(i,2)>0 
                     best_pto = vel(i,:);
-                end    
+                end 
+            elseif ai==ab && obj.UAVvel(idUAV,2)>0 %UAV con direccion arriba 
+                if vel(i,1)>0 
+                    best_pto = vel(i,:);
+                end 
+            elseif ai==ab && obj.UAVvel(idUAV,2)<0 %UAV con direccion abajo
+            if vel(i,1)<0 
+                best_pto = vel(i,:);
+            end 
             elseif ai < ab
                 best_pto = vel(i,:);
             end
@@ -532,10 +540,10 @@ function obj = CreateAREAfig(obj)
     grid(axesHandler,'on')
     hold(axesHandler,'on')
     axis([-obj.area +obj.area -obj.area +obj.area 0 50]) 
-    % mapa fondo
-    I = imread('mapa.jpg'); 
-    h = image(xlim,-ylim,I); 
-    uistack(h,'bottom')
+%     % mapa fondo
+%     I = imread('mapa.jpg'); 
+%     h = image(xlim,-ylim,I); 
+%     uistack(h,'bottom')
 
     %pinto los circulos de los UAVs
     handle = fill([0 1 1 0],[0 0 1 1],'r');

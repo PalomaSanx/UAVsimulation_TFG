@@ -2,13 +2,13 @@ clc; clear;
 tic;
 %% DEFINICION DE UAVS
 % menu para simulaciones
-scenario_choice = menu ('Elige el escenario a simular','Aleatorio 1','Escenario 2(Tiempo/radio)(colisiones/radio)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(colisiones/radio)','Escenario 8(colisiones/radio)','Escenario 9(colisiones/vel_max)','Escenario 10(colisiones/vel_max)','Escenario 11(colisiones/vel_max)','Escenario 12(colisiones/vel_max)');
+scenario_choice = menu ('Choose the scenario to simulate','Aleatorio 1','Escenario 2(Time/radius)(collision/radius)','Escenario 3','Escenario 4', 'Escenario 5','Escenario 6','Escenario 7(collision/radius)','Escenario 8(collision/radius)','Escenario 9(collision/vel_max)','Escenario 10(collision/vel_max)','Escenario 11(collision/vel_max)','Escenario 12(collision/vel_max)','Escenario 13(real/2UAVs)');
 
 switch scenario_choice 
     case 1
-         prompt = {'Enter number of UAVs:','Enter area:'};
+         prompt = {'Enter number of UAVs:','Enter area (m x m):'};
          dlgtitle = 'Input';
-         dims = [1 35];n.n,
+         dims = [1 35];
          answer = inputdlg(prompt,dlgtitle,dims);
          [UAVpos, UAVtarget, vel_max, UAVrad] = randScen(str2num(answer{1}),str2num(answer{2}));  
     case 2
@@ -33,13 +33,15 @@ switch scenario_choice
          run("../banco de pruebas/eval6_2A_100V_5R");
     case 12
          run("../banco de pruebas/eval7_2A_100V_5R");
+    case 13
+         run("../banco de pruebas/eval8_2A_100V_025R");
     otherwise
         disp('opción incorrecta');      
 end
 if exist('answer')
     air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,str2num(answer{2}));
 else
-    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,500);
+    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,5000);
 end
 
 

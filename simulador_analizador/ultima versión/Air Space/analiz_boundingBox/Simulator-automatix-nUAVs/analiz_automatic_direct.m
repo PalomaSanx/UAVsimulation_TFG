@@ -1,6 +1,6 @@
 tic;
 %% DEFINICION DE UAVS
-    air = AirSpace_direct(UAVpos,UAVtarget,vel_max,UAVrad,area);
+    air = AirSpace_direct(UAVpos,UAVtarget,vel_max,UAVrad,area+50,umbral);
 
 %% SIMULACION          
 
@@ -10,7 +10,7 @@ if t_sim_step > t_stab
     fprintf('ERROR en definición de tiempos\n');
     return
 end
-t_nav_step = (air.numUAVs/2)/2;%1   %intervalo para recalcular navegación (s)
+t_nav_step = 1;%(air.numUAVs/2)/2;   %intervalo para recalcular navegación (s)
 
 t_prev_nav = -t_nav_step; %intervalo para recalcular navegación (s)
 t_sim_end  = 10000;       %tiempo de fin de simulación (s)
@@ -61,3 +61,5 @@ function numConflict = countConflict(air)
     end
     numConflict = numConflict - repeat/2;
 end
+
+

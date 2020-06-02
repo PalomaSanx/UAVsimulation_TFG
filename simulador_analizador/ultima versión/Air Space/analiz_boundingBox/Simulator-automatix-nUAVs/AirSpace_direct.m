@@ -13,6 +13,7 @@ properties
     UAVvelF     %velocidad en el paso siguiente
     UAVtarget   %posicion objetivo
     conflictUAV %matriz para control de conflictos
+    finUAV      %matriz para control de finalización
 
     AREAfig     %figura de visualizacion de UAVs
     circle
@@ -24,12 +25,13 @@ properties
     distTotal   %Distancia total recorrida
     timeTotal   %Tiempo total al objetivo
     area        %Tamaño escenario (axis)
+    umbral      %distancia a la que se contemplan intrusos
 end
 
 methods
 
 
-function obj = AirSpace_direct(UAVpos,UAVtarget,vel_max,UAVrad,area)
+function obj = AirSpace_direct(UAVpos,UAVtarget,vel_max,UAVrad,area,umbral)
 
     sp = size(UAVpos);
     st = size(UAVtarget);
@@ -48,10 +50,12 @@ function obj = AirSpace_direct(UAVpos,UAVtarget,vel_max,UAVrad,area)
     obj.UAVvelF = obj.UAVvel; 
     obj.UAVtarget = UAVtarget;
     obj.conflictUAV = zeros(obj.numUAVs,obj.numUAVs);
+    obj.finUAV = zeros(1,obj.numUAVs);
     
     obj.distTotal = zeros(1,obj.numUAVs);
     obj.timeTotal = zeros(1,obj.numUAVs);
     obj.area = area;
+    obj.umbral = umbral;
 
     obj = obj.CreateAREAfig();
     obj = obj.CreateVELfig();
@@ -63,7 +67,9 @@ function obj = BBnav(obj,i,tau,verbose)
 %a partir de la situación relativa de los UAVs
 %empleando boundig boxes
 %tau: margen de tiempo en el que prevenir conflictos (s)
-
+    if obj.finUAV(i) == 1
+       return; 
+    end
     %velocidad actual
     vx = obj.UAVvel(i,1);
     vy = obj.UAVvel(i,2);
@@ -90,7 +96,10 @@ function obj = BBnav(obj,i,tau,verbose)
     for j = 1:obj.numUAVs
 
         %me descarto a mi mismo
-        if i == j 
+        %descarto al intruso si ha llego a su destino
+        %descarto si el intruso no se encuntra a distancia "umbral"
+        dist = norm(obj.UAVpos(j,:) - obj.UAVpos(i,:));
+        if i == j || obj.finUAV(i) == 1 || dist > obj.umbral
             continue
         end
 
@@ -439,7 +448,9 @@ function obj = TimeStep(obj,t_step,t_stab)
     
     figure(obj.AREAfig)
     for i = 1:obj.numUAVs
-        
+        if obj.finUAV(i) == 1
+            continue; 
+        end
         %calculo velocidad directa a objetivo
         route = obj.UAVtarget(i,:) - obj.UAVpos(i,:);
         dist = norm(route);
@@ -491,6 +502,13 @@ function [conflict,obj] = ConflictDetection(obj)
                 fprintf('COLISION entre %d y %d\n',i,j);
                 obj.conflictUAV(i,j)=1; 
                 conflict = true;
+            else
+                collisionTime = test_conflict(obj,obj.UAVpos(i,:),obj.UAVvel(i,:),obj.UAVpos(j,:),obj.UAVvel(j,:),obj.UAVrad);
+                if collisionTime < 0.05 && collisionTime > 0
+                    fprintf('COLISION entre %d y %d\n',i,j);
+                    obj.conflictUAV(i,j)=1; 
+                    conflict = true;
+                end
             end
         end
     end    
@@ -501,14 +519,20 @@ function [fin,obj] = TargetsReached(obj,t)
     %deteccion de fin de simulación
     fin = true;
     for i = 1:obj.numUAVs
-        dist = norm(obj.UAVtarget(i,:) - obj.UAVpos(i,:));
-        if dist > 1
-            fin = false;
-            %return
+        %comprobamos si ha terminado
+        if obj.finUAV(i) == 1
+            continue;
         else
-            if obj.timeTotal(i)==0
-                obj.timeTotal(i) = t; 
-            end      
+            dist = norm(obj.UAVtarget(i,:) - obj.UAVpos(i,:));
+            if dist > 1
+                fin = false;
+                %return
+            else
+                obj.finUAV(i) = 1;
+                if obj.timeTotal(i)==0
+                    obj.timeTotal(i) = t; 
+                end      
+            end
         end
     end
 end
@@ -598,6 +622,58 @@ function obj = CreateVELfig(obj)
 
 end
 
+
+function t_conflict = test_conflict(obj,p1,v1,p2,v2,r)
+
+    p1_x0 = p1(1);  p1_y0 = p1(2);
+    v1_x  = v1(1);  v1_y  = v1(2);
+    p2_x0 = p2(1);  p2_y0 = p2(2);
+    v2_x  = v2(1);  v2_y  = v2(2);
+
+
+    %planteo ecuacion de segundo grado
+
+    %calculo t^2
+    t2 = v1_x^2 + v1_y^2 + v2_x^2 + v2_y^2;
+    t2 = t2 - 2*v1_x*v2_x - 2*v1_y*v2_y;
+
+    %calculo t
+    t1 = 2*p1_x0*v1_x + 2*p1_y0*v1_y + 2*p2_x0*v2_x + 2*p2_y0*v2_y ;
+    t1 = t1 - 2*p1_x0*v2_x - 2*p2_x0*v1_x - 2*p1_y0*v2_y - 2*p2_y0*v1_y ;
+
+    %calculo termino independiente
+    t0 = p1_x0^2 + p1_y0^2 + p2_x0^2 + p2_y0^2 ; 
+    t0 = t0 - 2*p1_x0*p2_x0 - 2*p1_y0*p2_y0 ;
+    t0 = t0 - 4*r^2 ; 
+
+    %resuelvo la ecuación
+    t_conflicts = roots([t2 t1 t0]);
+
+    if isreal(t_conflicts)
+
+        t_conflict = min(t_conflicts);
+        
+        %pinto colisión
+        t_conflicts = t_conflict; %solo pinto colision entrante
+
+        p1_conflict = p1 + v1 .* t_conflicts;
+        P1_conflict = viscircles(p1_conflict,t_conflicts*0+r);
+        %P1_conflict.Children(1).Color = [0 1 0];
+
+        p2_conflict = p2 + v2 .* t_conflicts;
+        P2_conflict = viscircles(p2_conflict,t_conflicts*0+r);
+        %P2_conflict.Children(1).Color = [1 0 0];
+        
+        delete(P1_conflict);
+        delete(P2_conflict);
+        
+
+    else
+        %no hay conflicto
+        t_conflict = inf;
+    end
+    
+end
     
 end %methods
 end %classdef

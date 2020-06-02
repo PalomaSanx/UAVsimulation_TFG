@@ -39,7 +39,8 @@ switch scenario_choice
         disp('opción incorrecta');      
 end
 if exist('answer')
-    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,str2num(answer{2}));
+    area = str2num(answer{2})/2;
+    air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,area);
 else
     air = AirSpace(UAVpos,UAVtarget,vel_max,UAVrad,5000);
 end
@@ -53,7 +54,7 @@ if t_sim_step > t_stab
     fprintf('ERROR en definición de tiempos\n');
     return
 end
-t_nav_step = (air.numUAVs/2)/2;%1   %intervalo para recalcular navegación (s)
+t_nav_step = 1;%air.numUAVs/2)/2;   %intervalo para recalcular navegación (s)
 
 t_prev_nav = -t_nav_step; %intervalo para recalcular navegación (s)
 t_sim_end  = 10000;       %tiempo de fin de simulación (s)

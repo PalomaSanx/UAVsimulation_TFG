@@ -2,7 +2,7 @@
 
 _Gestión dinámica de colisiones en entornos con múltiples drones_
 
-![Dron](https://github.com/PalomaSanx/UAVsimulation_TFG/tree/master/imagReadme/dron.png)
+![Dron](https://github.com/PalomaSanx/UAVsimulation_TFG/blob/master/imgReadme/dron.png)
 
 ## Comenzando 🚀
 

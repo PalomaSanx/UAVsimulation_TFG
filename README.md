@@ -2,6 +2,8 @@
 
 _Gestión dinámica de colisiones en entornos con múltiples drones_
 
+![Dron](https://github.com/PalomaSanx/UAVsimulation_TFG/tree/master/imagReadme/dron.png)
+
 ## Comenzando 🚀
 
 _ En un futuro no muy lejano se prevee que los drones sean un elemento habitual dentro del espacio aéreo,

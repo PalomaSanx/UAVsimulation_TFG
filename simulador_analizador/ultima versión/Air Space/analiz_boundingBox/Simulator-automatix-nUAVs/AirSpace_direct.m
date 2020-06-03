@@ -504,7 +504,7 @@ function [conflict,obj] = ConflictDetection(obj)
                 conflict = true;
             else
                 collisionTime = test_conflict(obj,obj.UAVpos(i,:),obj.UAVvel(i,:),obj.UAVpos(j,:),obj.UAVvel(j,:),obj.UAVrad);
-                if collisionTime < 0.05 && collisionTime > 0
+                if (collisionTime < 0.05) && (collisionTime > 0)
                     fprintf('COLISION entre %d y %d\n',i,j);
                     obj.conflictUAV(i,j)=1; 
                     conflict = true;

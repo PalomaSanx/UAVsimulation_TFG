@@ -23,7 +23,7 @@ dos (o más) de ellos se encuentran a una distancia inferior a un umbrar de segu
 _En este trabajo se propone un algoritmo como mecanismo para la detección y evitación de colisiones en escenarios con múltiples drones. El algoritmo propuesto (“Bounding Box Collision Avoidance”) está basado en técnicas geométricas, buscando mejorar, por su sencillez, otros métodos presentes en la literatura.
 Este algoritmo ha sido implementado mediante la herramienta MATLAB, para escenarios dinámicos, donde los UAV sobrevuelan el espacio aéreo de forma autónoma y deben tomar decisiones en tiempo real. La solución funciona de forma descentralizada, ya que se consideran escenarios congestionados (con cientos de drones)._
 
-_Para la visualización y obtención de datos, se ha desarrollado un analizador a través de MATLAB, que permita ejecutar el algoritmo y poder graficar cada paso de este a la vez que visualizamos el vuelo de los diferentes UAV involucrados. Los datos obtenidos, para simulaciones con dos o múltiples UAV, permiten el estudio y análisis del comportamiento del algoritmo. Además, se ha desarrollado un simulador mediante Simulink y MATLAB, que permita la ejecución de escenarios en tres dimensiones._  
+_Para la visualización y obtención de datos, se ha desarrollado un analizador a través de MATLAB, que permita ejecutar el algoritmo y poder graficar cada paso de este a la vez que visualizamos el vuelo de los diferentes UAV involucrados. Los datos obtenidos, para simulaciones con dos o múltiples UAV, permiten el estudio y análisis del comportamiento del algoritmo. ._  
 
 ![Dron](https://github.com/PalomaSanx/UAVsimulation_TFG/blob/master/imgReadme/simulacion.jpg)
 
@@ -41,6 +41,7 @@ _Descargar el repositorio y abrir el mismo desde Matlab._
 
 _Abrir script del analizador en Matlab y ejecutar._
 
+![Video_BBCA](https://github.com/PalomaSanx/UAVsimulation_TFG/blob/master/imgReadme/BBCA.gif)
 
 ## Herramientas empleadas 🛠️
 

@@ -24,6 +24,7 @@ properties
     distTotal   %Distancia total recorrida
     timeTotal   %Tiempo total al objetivo
     area        %Tamaño escenario (axis)
+
 end
 
 methods

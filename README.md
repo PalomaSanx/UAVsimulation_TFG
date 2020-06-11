@@ -31,9 +31,11 @@ _Para la visualización y obtención de datos, se ha desarrollado un analizador 
 
 ### Simulador 3D
 
-_Descargar el repositorio y abrir el mismo desde Matlab._
+_Descargar el repositorio y abrir el mismo desde Matlab (R2019-b)._
 
 _Abrir aplicación app Designer de Matlab y ejecutar simulación._
+
+![Interfaz_Usuario](https://github.com/PalomaSanx/UAVsimulation_TFG/blob/master/imgReadme/IU3D.png)
 
 ### Analizador de algoritmo
 
@@ -60,9 +62,11 @@ Usamos [SemVer](http://semver.org/) para el versionado. Para todas las versiones
 
 * **Paloma Sánchez** - *Autor* - [palomasanx](https://github.com/PalomaSanx)
 * **Rafael Casado González** - *Director* - 
-* **Aurelio Bermúdez Martín** - *Director* - 
+* **Aurelio Bermúdez Martín** - *Director* - [abermu] (https://github.com/abermu)
 
 ## Licencia 📄
 
-Este proyecto está bajo la Licencia (Tu Licencia) - mira el archivo [LICENSE.md](LICENSE.md) para detalles
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/3.0/es/"><img alt="Creative Commons Licence" style="border-width:0" src="https://licensebuttons.net/l/by-nc-nd/3.0/88x31.png" /></a>
+
+Este proyecto está bajo la Licencia (CC BY-NC-ND 3.0 ES) - [Licencia](https://creativecommons.org/licenses/by-nc-nd/3.0/es/)
 

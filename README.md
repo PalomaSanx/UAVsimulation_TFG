@@ -47,7 +47,7 @@ _Abrir script del analizador en Matlab y ejecutar._
 
 ## Herramientas empleadas 🛠️
 
-* [Matlab](https://es.mathworks.com/) - Matlab
+* [Matlab](https://es.mathworks.com/) - Matlab R2019b
 * [Simulink](https://es.mathworks.com/products/simulink.html) - Simulink
 
 ## Wiki 📖
@@ -62,7 +62,7 @@ Usamos [SemVer](http://semver.org/) para el versionado. Para todas las versiones
 
 * **Paloma Sánchez** - *Autor* - [palomasanx](https://github.com/PalomaSanx)
 * **Rafael Casado González** - *Director* - 
-* **Aurelio Bermúdez Martín** - *Director* - [abermu] (https://github.com/abermu)
+* **Aurelio Bermúdez Martín** - *Director* - [abermu](https://github.com/abermu)
 
 ## Licencia 📄
 

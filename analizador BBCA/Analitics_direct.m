@@ -15,7 +15,7 @@ for i=1:air.numUAVs
 end
 
 ax1 = subplot(3,1,1);
-b = bar(ax1,[distReal',distTotalDirect']);
+b = bar(ax1,[distReal',distTotalDirect'],'BarWidth',0.2);
 b(1).FaceColor = 'y';
 b(2).FaceColor = 'r';
 grid on
@@ -27,7 +27,7 @@ ylabel('distance (m)');  % etiqueta para el nombre del eje y
 %% ------Gráfica 2: % distancia recorrida por UAV (direct vs real)------
 
 ax2 = subplot(3,1,2);
-bar(ax2,(abs(distTotalDirect-distReal)./abs(distReal))*100,'r');
+bar(ax2,(abs(distTotalDirect-distReal)./abs(distReal))*100,'r','BarWidth',0.2);
 grid on
 title('(%) Deviation direct/real');
 xlabel('UAV');  % etiqueta para el nombre del eje x
@@ -38,7 +38,7 @@ ylabel('increase (%)');  % etiqueta para el nombre del eje y
 % leo tiempo empleado por UAV
 timeTotalDirect = air.timeTotal;
 ax3 = subplot(3,1,3);
-bar(ax3,timeTotalDirect,'r');
+bar(ax3,timeTotalDirect,'r','BarWidth',0.2);
 grid on
 title('Total time for UAV (s)');
 xlabel('UAV');  % etiqueta para el nombre del eje x
@@ -55,10 +55,10 @@ annotation('textbox',[.45 0.96 .3 .04],'String',['Simulation Time : ',num2str(tS
 
  %% guardar archivos de imagenes de la grafica estadisticas
 
- print(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(scenario_choice)],'-dpdf');   
+ print(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(k)],'-dpdf');   
 
  %% Inserto registro en log 'outputLog' 
-    outputLog = fopen([ruta 'outputLog_',air.typeNav,'_scenario',num2str(scenario_choice),'.csv'],'w');
+    outputLog = fopen([ruta 'outputLog_',air.typeNav,'_scenario',num2str(k),'.csv'],'w');
     fprintf(outputLog,'%4.3d\n',numConflictTotalDirect);
     for i=1:numUAVs
         fprintf(outputLog,'%4.3d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%4.3d\n' ...

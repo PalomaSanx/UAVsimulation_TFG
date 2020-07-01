@@ -18,6 +18,8 @@ properties
     
     UAVposInit         %posiciones iniciales
     UAVpos             %posiciones actuales
+    UAVposDegree       %posiciones analisis 2 UAV
+    UAVtargetDegree    %posiciones objetivo analisis 2 UAV
     UAVvel             %velocidades actuales
     UAVvelF            %velocidades en el paso siguiente
     UAVtarget          %posiciones objetivo
@@ -35,6 +37,8 @@ properties
     
     distTotal          %Distancia total recorrida
     timeTotal          %Tiempo total al objetivo
+    
+    
 
 end
 
@@ -736,6 +740,16 @@ function obj = countConflict(obj)
     end  
 end
 
+function obj = analiz_automatic_2UAVs(obj,radioAnalitic,minDegree,interDegree,maxDegree)
+
+    j = 1;
+    for k=minDegree:interDegree:maxDegree
+        obj.UAVposDegree(j,:) = [cos(deg2rad(k))*radioAnalitic sin(deg2rad(k))*radioAnalitic];
+        obj.UAVtargetDegree(j,:) = -obj.UAVposDegree(j,:);
+        j = j + 1;
+    end
+    
+end
 
 end %methods
 end %classdef

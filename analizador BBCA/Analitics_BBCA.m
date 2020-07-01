@@ -73,10 +73,10 @@ annotation('textbox',[.45 0.96 .3 .04],'String',['Simulation Time : ',num2str(tS
 
  %% guardar archivos de imagenes de la grafica estadisticas
 
- print(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(scenario_choice)],'-dpdf');  
- savefig(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(scenario_choice)],'compact')
+ print(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(k)],'-dpdf');  
+ savefig(figAnalitics,[ruta 'img_statistics_',air.typeNav,'_scenario',num2str(k)],'compact')
  %% Inserto registro en log 'outputLog' 
-    outputLog = fopen([ruta 'outputLog_',air.typeNav,'_scenario',num2str(scenario_choice),'.csv'],'w');
+    outputLog = fopen([ruta 'outputLog_',air.typeNav,'_scenario',num2str(k),'.csv'],'w');
     fprintf(outputLog,'%4.3d\n',numConflictTotalBBCA);
     for i=1:numUAVs
         fprintf(outputLog,'%4.3d,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%5.2f,%4.3d\n' ...
